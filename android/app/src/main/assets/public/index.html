@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FollowUp</title>
+<style>
+/* ---------- Theme tokens ---------- */
+:root{--bg:#f3f4f1;--card:#fff;--tx:#16201c;--mut:#64706a;--bd:#e0e4df;--pri:#0b6b57;--prit:#fff;--red:#c62828;--redb:#fde8e8;--amb:#a15c00;--ambb:#fff1d6;--grn:#1b7a3d;--grnb:#e0f4e6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101513;--card:#1a211e;--tx:#e8eeea;--mut:#9aa7a0;--bd:#2c3631;--pri:#3ec9a7;--prit:#06251d;--red:#ff8a80;--redb:#3a1c1c;--amb:#ffc266;--ambb:#3a2d12;--grn:#6fdc92;--grnb:#16301f}}
+:root[data-theme="dark"]{--bg:#101513;--card:#1a211e;--tx:#e8eeea;--mut:#9aa7a0;--bd:#2c3631;--pri:#3ec9a7;--prit:#06251d;--red:#ff8a80;--redb:#3a1c1c;--amb:#ffc266;--ambb:#3a2d12;--grn:#6fdc92;--grnb:#16301f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}body{background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;max-width:640px;margin:0 auto;padding-bottom:150px}
+h1{font-size:22px;margin:0;letter-spacing:-.3px}h2{font-size:17px;margin:18px 0 8px}h3{font-size:15px;margin:0 0 8px}
+.mut{color:var(--mut);font-size:13px}.r{text-align:right}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 6px}
+main{padding:0 12px}
+/* ---------- Components ---------- */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px;border-left-width:5px}
+.card.over{border-left-color:var(--red)}.card.today{border-left-color:var(--amb)}.card.plain{border-left-color:var(--bd)}
+.row{display:flex;justify-content:space-between;gap:8px;cursor:pointer}
+.due{font-size:12px;margin-top:4px;font-weight:600}.over .due{color:var(--red)}.today .due{color:var(--amb)}
+.acts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.btn,.chip{display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 8px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);font:600 13px system-ui;text-decoration:none;cursor:pointer}
+.btn.pri{background:var(--pri);color:var(--prit);border-color:var(--pri)}.btn.wa{color:var(--grn);background:var(--grnb);border-color:transparent}.btn.red{color:var(--red)}
+.btn.full{width:100%;margin-top:8px;font-size:15px}
+.chip{min-height:36px;display:inline-flex;margin:4px 6px 0 0;border-radius:18px}
+.b{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;background:var(--bd)}
+.s0{background:#e3ecff;color:#1b4fb0}.s1{background:#ede4ff;color:#5b34b0}.s2{background:var(--ambb);color:var(--amb)}.s3{background:var(--grnb);color:var(--grn)}.s4{background:#d8f3ee;color:#0b6b57}.s5{background:var(--redb);color:var(--red)}
+.empty{text-align:center;color:var(--mut);padding:36px 16px;border:1px dashed var(--bd);border-radius:12px}
+input,select,textarea{width:100%;min-height:48px;padding:10px 12px;font:16px system-ui;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:10px}
+textarea{min-height:84px}label{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
+.filters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0 12px}.filters input{grid-column:1/-1}.filters select{min-height:42px;font-size:14px;padding:6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px}.kpi b{font-size:28px;display:block}
+.cv{height:210px;position:relative}
+/* Kanban */
+.board{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}
+.col{flex:0 0 78%;scroll-snap-align:start;background:var(--bd);border-radius:12px;padding:8px}.col .card{margin-bottom:8px}
+.mv{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.mv .btn{min-height:38px}
+/* Nav, FAB, sheet */
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav div{display:flex;width:100%;max-width:640px}nav button{flex:1;min-height:58px;border:0;background:none;color:var(--mut);font:600 12px system-ui}nav button.on{color:var(--pri);box-shadow:inset 0 3px var(--pri)}
+.fab{position:fixed;right:16px;bottom:calc(74px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;border:0;background:var(--pri);color:var(--prit);font-size:30px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+#sh{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9;align-items:flex-end;justify-content:center}#sh.on{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92%;overflow:auto;border-radius:18px 18px 0 0;padding:8px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--bd);margin:4px auto 10px}
+.tl{list-style:none;padding:0;margin:0}.tl li{border-left:2px solid var(--bd);padding:0 0 12px 12px;margin-left:5px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}.dl dt{color:var(--mut)}.dl dd{margin:0}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom,0px));background:#222;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:20;display:none;max-width:90%}
+</style></head><body>
+<header><h1>FollowUp</h1><button class="chip" onclick="menu()">Menu</button></header>
+<main id="app"></main>
+<button class="fab" aria-label="Add lead" onclick="leadForm()">+</button>
+<nav><div id="nav"></div></nav>
+<div id="sh" onclick="if(event.target===this)closeSheet()"></div><div id="toast"></div>
+<script src="chart.umd.js"></script>
+<script>
+/* ================= CONSTANTS & STATE ================= */
+const ST=['Enquiry','Test Drive','Negotiation','Booked','Delivered','Lost'];
+const SRC=['Walk-in','Phone','Website','Referral','Social Media'];
+const LOSTR=['Price','Competitor','Finance rejected','Postponed','Other'];
+const KEY='followup.v1';
+let S={leads:[],cat:{},cols:[],catSample:false,colSample:false,sample:false,theme:'',me:'Amit',tpl:'Hi {name}, this is {me} from the showroom. Just checking in about the {vehicle} you enquired about. When is a good time to talk?'};
+let tab='today',filt={q:'',st:'',src:'',sp:''},charts=[];
+const $=(s)=>document.querySelector(s);
+
+/* ================= HELPERS ================= */
+const p2=n=>String(n).padStart(2,'0');
+const iso=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+const nowS=()=>iso(new Date());
+const todayS=()=>nowS().slice(0,10);
+const at=(n,h=11,m=0)=>{const d=new Date();d.setDate(d.getDate()+n);d.setHours(h,m,0,0);return iso(d)};
+const fmtDT=s=>s?new Date(s).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit',hour12:true}):'—';
+const tm=s=>new Date(s).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true});
+const inr=n=>n?'₹'+Number(n).toLocaleString('en-IN'):'—'; // Indian grouping: ₹5,50,000
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const find=id=>S.leads.find(l=>l.id===id);
+const active=l=>l.status!=='Delivered'&&l.status!=='Lost';
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2600)}
+
+/* ================= STORAGE ================= */
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Storage unavailable: changes will not be kept')}}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.leads){S=Object.assign(S,d);migrate();return}}catch(e){}seed()}
+function seed(){
+  const mk=(name,mobile,vehicle,source,budget,ex,fin,status,next,sp,ago,notes,lost='')=>({id:uid(),name,mobile,vehicle,source,budget,exch:{on:!!ex,d:ex||''},fin,status,next,notes,created:at(-ago,10),sp,lost,hist:[{t:at(-ago,10),k:'new',x:'Lead created'}]});
+  S.leads=[
+   mk('Rajesh Kumar','9810012345','Maruti Swift ZXi AMT','Walk-in',850000,'2014 Alto',true,'Enquiry',at(0,11,30),'Amit Singh',1,'Wants AMT, asked about festive offers.'),
+   mk('Priya Sharma','9899023456','Hyundai Creta SX(O) Diesel','Referral',1850000,'',true,'Test Drive',at(-1,17),'Pooja Rana',4,'Test drive done Sunday. Waiting for family decision.'),
+   mk('Mohit Verma','9711034567','Hero Splendor Plus','Walk-in',82000,'',false,'Negotiation',at(0,16,30),'Amit Singh',3,'Asking for free helmet and insurance.'),
+   mk('Sunita Yadav','9958045678','Honda Activa 6G','Phone',95000,'2016 Activa',false,'Enquiry',at(-2,10),'Pooja Rana',5,'Call back after 10 AM.'),
+   mk('Anil Chauhan','9650056789','Tata Nexon XZ+','Website',1450000,'',true,'Negotiation',at(1,12),'Amit Singh',6,'Comparing with Brezza.'),
+   mk('Deepak Singh','9990067890','Royal Enfield Classic 350','Social Media',215000,'',true,'Booked',at(3,15),'Pooja Rana',8,'Booked. Delivery pending registration.'),
+   mk('Neha Gupta','9818078901','Maruti Brezza VXi','Walk-in',1050000,'2012 Swift',true,'Delivered','','Amit Singh',20,'Delivered last week.'),
+   mk('Imran Khan','9873089012','Hyundai Venue S','Referral',1100000,'',true,'Lost','','Pooja Rana',12,'Loan rejected by bank.','Finance rejected')];
+  S.leads[1].hist.push({t:at(-3,12),k:'done',x:'Test drive scheduled',l:0});
+  S.leads[2].hist.push({t:at(-1,11),k:'done',x:'Quoted on-road price',l:0});
+  S.leads[4].hist.push({t:at(-2,11),k:'done',x:'Sent brochure',l:1});
+  S.leads[7].hist.push({t:at(-6,10),k:'status',x:'Moved to Lost: Finance rejected'});
+  S.cat={'Maruti Swift':['LXi','ZXi AMT'],'Hyundai Creta':['SX(O) Diesel'],'Hero Splendor Plus':['Self Drum'],'Honda Activa 6G':['Deluxe']};S.catSample=true;
+  S.cols=[['Maruti Swift','','Pearl White'],['Maruti Swift','','Lustre Blue'],['Maruti Swift','ZXi AMT','Solid Fire Red'],['Hyundai Creta','','Abyss Black'],['Hyundai Creta','','Atlas White'],['Hero Splendor Plus','','Black Red'],['Hero Splendor Plus','','Black Blue'],['Honda Activa 6G','','Pearl Precious White'],['Honda Activa 6G','','Matte Axis Grey']].map(([model,variant,color])=>({model,variant,color}));S.colSample=true;
+  Object.assign(S.leads[0],{model:'Maruti Swift',variant:'ZXi AMT',color:'Pearl White'});Object.assign(S.leads[1],{model:'Hyundai Creta',variant:'SX(O) Diesel',color:'Abyss Black'});
+  S.sample=true;save();
+}
+
+/* ================= SHEETS ================= */
+function sheet(h){const e=$('#sh');e.innerHTML='<div class="sheet"><div class="grab"></div>'+h+'</div>';e.classList.add('on')}
+function closeSheet(){const e=$('#sh');e.classList.remove('on');e.innerHTML=''}
+const qk=id=>[['Tomorrow',1],['In 3 days',3],['Next week',7]].map(([t,n])=>`<button type="button" class="chip" onclick="$('#${id}').value=at(${n})">${t}</button>`).join('');
+
+/* ================= TODAY ================= */
+function card(l,k){return `<div class="card ${k}"><div class="row" onclick="detail('${l.id}')"><div><b>${esc(l.name)}</b><div class="mut">${esc(l.vehicle)}</div></div><div class="r"><span class="b s${ST.indexOf(l.status)}">${l.status}</span><div class="due">${k==='over'?fmtDT(l.next):tm(l.next)}</div></div></div>
+<div class="acts"><a class="btn" href="tel:${l.mobile}">Call</a><button class="btn wa" onclick="wa('${l.id}')">WhatsApp</button><button class="btn pri" onclick="done('${l.id}')">Done</button><button class="btn" onclick="resched('${l.id}')">Reschedule</button></div></div>`}
+function rToday(){
+  const t=todayS(),A=S.leads.filter(l=>active(l)&&l.next).sort((a,b)=>a.next.localeCompare(b.next));
+  const over=A.filter(l=>l.next.slice(0,10)<t),due=A.filter(l=>l.next.slice(0,10)===t);
+  return `<h2>Overdue (${over.length})</h2>${over.map(l=>card(l,'over')).join('')||'<div class="empty">Nothing overdue. Nice work.</div>'}
+<h2>Calls due today (${due.length})</h2>${due.map(l=>card(l,'today')).join('')||'<div class="empty">No calls scheduled for today.<br>Tap + to add a new enquiry.</div>'}`}
+function done(id){const l=find(id);sheet(`<h3>Follow-up done: ${esc(l.name)}</h3><label>What was discussed?</label><textarea id="dn" placeholder="e.g. Customer wants a test drive on Saturday"></textarea><label>Next follow-up</label><input type="datetime-local" id="nx" value="${at(1)}">${qk('nx')}<button class="btn pri full" onclick="doneSave('${id}')">Save and schedule next</button>`)}
+function doneSave(id){const l=find(id),n=$('#nx').value;if(!n)return toast('Pick the next follow-up date');
+  l.hist.push({t:nowS(),k:'done',x:$('#dn').value.trim()||'Follow-up done',l:l.next&&l.next.slice(0,10)<todayS()?1:0});l.next=n;save();closeSheet();render();toast('Follow-up saved')}
+function resched(id){const l=find(id);sheet(`<h3>Reschedule: ${esc(l.name)}</h3><label>New date and time</label><input type="datetime-local" id="nx" value="${at(1)}">${qk('nx')}<button class="btn pri full" onclick="reSave('${id}')">Reschedule</button>`)}
+function reSave(id){const l=find(id),n=$('#nx').value;if(!n)return toast('Pick a date');l.hist.push({t:nowS(),k:'resched',x:'Rescheduled to '+fmtDT(n)});l.next=n;save();closeSheet();render()}
+
+/* ================= WHATSAPP ================= */
+const fill=l=>S.tpl.replace(/{name}/g,l.name.split(' ')[0]).replace(/{vehicle}/g,l.vehicle).replace(/{me}/g,S.me);
+function wa(id){const l=find(id),m=fill(l);
+  sheet(`<h3>WhatsApp ${esc(l.name)}</h3><label>Message (edit before sending)</label><textarea id="wm" oninput="waLink('${id}')">${esc(m)}</textarea><label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="ws" style="width:22px;min-height:22px">Use my edits as the new template</label><a id="wl" class="btn pri full" target="_blank" rel="noopener" href="https://wa.me/91${l.mobile}?text=${encodeURIComponent(m)}" onclick="waSave('${id}')">Open WhatsApp</a>`)}
+function waLink(id){$('#wl').href='https://wa.me/91'+find(id).mobile+'?text='+encodeURIComponent($('#wm').value)}
+function waSave(id){if(!$('#ws').checked)return;const l=find(id);S.tpl=$('#wm').value.split(l.name.split(' ')[0]).join('{name}').split(l.vehicle).join('{vehicle}').split(S.me).join('{me}');save()}
+function tplEdit(){sheet(`<h3>WhatsApp template</h3><label>Your name</label><input id="me" value="${esc(S.me)}"><label>Message. Use {name}, {vehicle}, {me}</label><textarea id="tp">${esc(S.tpl)}</textarea><button class="btn pri full" onclick="S.me=$('#me').value.trim()||S.me;S.tpl=$('#tp').value;save();closeSheet();toast('Template saved')">Save template</button>`)}
+
+/* ================= STATUS ================= */
+function setSt(id,s){if(s==='Lost'){const l=find(id);return sheet(`<h3>Why was ${esc(l.name)} lost?</h3>${LOSTR.map(r=>`<button class="btn full" onclick="applySt('${id}','Lost','${r}')">${r}</button>`).join('')}`)}applySt(id,s)}
+function applySt(id,s,reason=''){const l=find(id);l.status=s;l.lost=reason;
+  l.hist.push({t:nowS(),k:'status',x:'Moved to '+s+(reason?': '+reason:'')});
+  if(!active(l))l.next='';else if(!l.next)l.next=at(1);
+  save();closeSheet();render()}
+
+/* ================= LEAD DETAIL ================= */
+const KL={new:'Created',done:'Follow-up done',status:'Status',resched:'Rescheduled'};
+function detail(id){const l=find(id),ov=l.next&&l.next.slice(0,10)<todayS();
+  sheet(`<h3 style="font-size:19px">${esc(l.name)}</h3><div class="mut">${l.mobile} · ${esc(l.vehicle)}</div>
+<label>Status</label><select onchange="closeSheet();setSt('${id}',this.value)">${ST.map(s=>`<option ${s===l.status?'selected':''}>${s}</option>`).join('')}</select>
+<div class="acts" style="grid-template-columns:repeat(3,1fr)"><a class="btn" href="tel:${l.mobile}">Call</a><button class="btn wa" onclick="wa('${id}')">WhatsApp</button><button class="btn" onclick="leadForm('${id}')">Edit</button></div>
+<h2>Details</h2><dl class="dl"><dt>Next call</dt><dd style="${ov?'color:var(--red);font-weight:700':''}">${fmtDT(l.next)}</dd><dt>Source</dt><dd>${l.source}</dd><dt>Color</dt><dd>${esc(l.color)||'—'}</dd><dt>Budget</dt><dd>${inr(l.budget)}</dd><dt>Exchange</dt><dd>${l.exch.on?'Yes: '+esc(l.exch.d):'No'}</dd><dt>Finance</dt><dd>${l.fin?'Required':'Not required'}</dd><dt>Salesperson</dt><dd>${esc(l.sp)||'—'}</dd><dt>Created</dt><dd>${fmtDT(l.created)}</dd>${l.lost?`<dt>Lost reason</dt><dd>${l.lost}</dd>`:''}<dt>Notes</dt><dd>${esc(l.notes)||'—'}</dd></dl>
+<h2>Follow-up history</h2><ul class="tl">${[...l.hist].reverse().map(h=>`<li><b>${KL[h.k]}</b> <span class="mut">${fmtDT(h.t)}${h.l?' · late':''}</span><div>${esc(h.x)}</div></li>`).join('')}</ul>
+<button class="btn red full" onclick="if(confirm('Delete this lead?')){S.leads=S.leads.filter(x=>x.id!=='${id}');save();closeSheet();render()}">Delete lead</button>`)}
+
+/* ================= ADD / EDIT FORM ================= */
+function leadForm(id){const l=id?find(id):{name:'',mobile:'',vehicle:'',source:'Walk-in',budget:'',exch:{on:false,d:''},fin:false,status:'Enquiry',next:at(1),notes:'',sp:S.me};
+  const sps=[...new Set(S.leads.map(x=>x.sp).filter(Boolean))],opt=(a,v)=>a.map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('');
+  sheet(`<h3>${id?'Edit lead':'New lead'}</h3>
+<label>Customer name *</label><input id="fn" value="${esc(l.name)}" autocomplete="off">
+<label>Mobile number * (10 digits)</label><input id="fm" type="tel" inputmode="numeric" maxlength="10" value="${l.mobile}">
+${vehHTML(l)}
+<div class="g2"><div><label>Source</label><select id="fs">${opt(SRC,l.source)}</select></div><div><label>Status</label><select id="fst">${opt(ST,l.status)}</select></div></div>
+<label>Budget (₹)</label><input id="fb" inputmode="numeric" value="${l.budget}" oninput="$('#bh').textContent=inr(this.value.replace(/\\D/g,''))"><div class="mut" id="bh">${l.budget?inr(l.budget):''}</div>
+<div class="g2"><div><label>Exchange vehicle</label><select id="fe" onchange="$('#fed').style.display=this.value==='Yes'?'block':'none'">${opt(['No','Yes'],l.exch.on?'Yes':'No')}</select></div><div><label>Finance required</label><select id="ff">${opt(['No','Yes'],l.fin?'Yes':'No')}</select></div></div>
+<input id="fed" style="margin-top:8px;display:${l.exch.on?'block':'none'}" placeholder="Exchange details (make, year)" value="${esc(l.exch.d)}">
+<label>Next follow-up</label><input type="datetime-local" id="fx" value="${l.next}">${qk('fx')}
+<label>Assigned salesperson</label><input id="fp" list="spl" value="${esc(l.sp)}"><datalist id="spl">${sps.map(s=>`<option>${esc(s)}</option>`).join('')}</datalist>
+<label>Notes</label><textarea id="fno">${esc(l.notes)}</textarea>
+<button class="btn pri full" onclick="formSave('${id||''}')">Save lead</button>`);if(Object.keys(S.cat).length)vSel({v:l.variant,c:l.color,veh:l.vehicle})}
+function formSave(id){const g=x=>$('#'+x).value.trim(),name=g('fn'),mob=g('fm').replace(/\D/g,''),st=g('fst'),nx=$('#fx').value;
+  if(!name)return toast('Enter the customer name');
+  if(!/^\d{10}$/.test(mob))return toast('Mobile number must be exactly 10 digits');
+  let model='',variant='',color='',veh='';
+  if($('#vm')){const m=$('#vm').value;if(!m)return toast('Select the model');
+    if(m==='__o'){veh=g('fv');color=g('fc')}else{variant=$('#vv').value;if(!variant)return toast('Select the variant');model=m;veh=m+' '+variant;color=$('#fc').value}}
+  else{veh=g('fv');color=g('fc')}
+  if(!veh)return toast('Enter the vehicle');
+  if(ST.indexOf(st)<4&&!nx)return toast('Set the next follow-up');
+  const d={name,mobile:mob,vehicle:veh,model,variant,color,source:g('fs'),status:st,budget:g('fb').replace(/\D/g,''),exch:{on:g('fe')==='Yes',d:g('fed')},fin:g('ff')==='Yes',next:ST.indexOf(st)<4?nx:'',sp:g('fp'),notes:g('fno')};
+  if(id){const l=find(id);if(l.status!==st)l.hist.push({t:nowS(),k:'status',x:'Moved to '+st});Object.assign(l,d);if(st==='Lost'&&!l.lost)l.lost='Other'}
+  else S.leads.unshift(Object.assign({id:uid(),created:nowS(),lost:st==='Lost'?'Other':'',hist:[{t:nowS(),k:'new',x:'Lead created'}]},d));
+  save();closeSheet();render();toast('Lead saved')}
+
+/* ================= LEADS LIST ================= */
+function rLeads(){
+  const sps=[...new Set(S.leads.map(l=>l.sp).filter(Boolean))],o=(a,v,t)=>`<option value="">${t}</option>`+a.map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('');
+  const q=filt.q.toLowerCase(),L=S.leads.filter(l=>(!q||(l.name+l.mobile+l.vehicle).toLowerCase().includes(q))&&(!filt.st||l.status===filt.st)&&(!filt.src||l.source===filt.src)&&(!filt.sp||l.sp===filt.sp));
+  return `<div class="filters"><input id="q" type="search" placeholder="Search name, mobile or vehicle" value="${esc(filt.q)}" oninput="filt.q=this.value;lst()"><select onchange="filt.st=this.value;lst()">${o(ST,filt.st,'All status')}</select><select onchange="filt.src=this.value;lst()">${o(SRC,filt.src,'All sources')}</select><select onchange="filt.sp=this.value;lst()">${o(sps,filt.sp,'All sales')}</select></div><div id="ll">${rows(L)}</div>`}
+function rows(L){return L.length?L.map(l=>{const k=!active(l)||!l.next?'plain':l.next.slice(0,10)<todayS()?'over':l.next.slice(0,10)===todayS()?'today':'plain';
+  return `<div class="card ${k}"><div class="row" onclick="detail('${l.id}')"><div><b>${esc(l.name)}</b><div class="mut">${esc(l.vehicle)} · ${inr(l.budget)}</div></div><div class="r"><span class="b s${ST.indexOf(l.status)}">${l.status}</span><div class="due">${l.next?fmtDT(l.next):''}</div></div></div></div>`}).join(''):'<div class="empty">No leads match.<br>Clear the filters or tap + to add one.</div>'}
+function lst(){const q=filt.q.toLowerCase();$('#ll').innerHTML=rows(S.leads.filter(l=>(!q||(l.name+l.mobile+l.vehicle).toLowerCase().includes(q))&&(!filt.st||l.status===filt.st)&&(!filt.src||l.source===filt.src)&&(!filt.sp||l.sp===filt.sp)))}
+
+/* ================= PIPELINE (Kanban) ================= */
+function rPipe(){return `<div class="mut" style="margin:6px 0">Swipe sideways. Use the arrows to move a lead.</div><div class="board">${ST.map((s,i)=>{const L=S.leads.filter(l=>l.status===s);
+  return `<div class="col"><h3>${s} (${L.length})</h3>${L.map(l=>`<div class="card plain"><div onclick="detail('${l.id}')"><b>${esc(l.name)}</b><div class="mut">${esc(l.vehicle)}</div><div class="mut">${inr(l.budget)}${l.lost?' · '+l.lost:''}</div></div><div class="mv"><button class="btn" ${i?'':'disabled'} onclick="setSt('${l.id}','${ST[i-1]}')">◀ ${ST[i-1]||''}</button><button class="btn" ${i<5?'':'disabled'} onclick="setSt('${l.id}','${ST[i+1]}')">${ST[i+1]||''} ▶</button></div></div>`).join('')||'<div class="mut" style="padding:12px">No leads here</div>'}</div>`}).join('')}</div>`}
+
+/* ================= DASHBOARD ================= */
+function rDash(){
+  const m=todayS().slice(0,7),L=S.leads,thisM=L.filter(l=>l.created.slice(0,7)===m).length,bk=L.filter(l=>l.status==='Booked'||l.status==='Delivered').length;
+  const conv=L.length?Math.round(bk/L.length*100):0,H=L.flatMap(l=>l.hist).filter(h=>h.k==='done'),late=H.filter(h=>h.l).length,od=L.filter(l=>active(l)&&l.next&&l.next.slice(0,10)<todayS()).length;
+  return `<div class="g2" style="margin-top:8px"><div class="kpi"><b>${thisM}</b><span class="mut">Leads this month</span></div><div class="kpi"><b>${conv}%</b><span class="mut">Enquiry to Booked</span></div></div>
+<h2>Follow-ups: on time vs missed</h2><div class="card plain"><div class="cv"><canvas id="c1"></canvas></div><div class="mut">On time ${H.length-late} · Done late ${late} · Overdue now ${od}</div></div>
+<h2>Leads by source</h2><div class="card plain"><div class="cv"><canvas id="c2"></canvas></div></div>
+<h2>Lost reasons</h2><div class="card plain"><div class="cv"><canvas id="c3"></canvas></div></div>`}
+function drawCharts(){
+  if(typeof Chart==='undefined'){return}
+  charts.forEach(c=>c.destroy());charts=[];
+  const css=getComputedStyle(document.documentElement),g=v=>css.getPropertyValue(v).trim();Chart.defaults.color=g('--mut');
+  const L=S.leads,H=L.flatMap(l=>l.hist).filter(h=>h.k==='done'),late=H.filter(h=>h.l).length,od=L.filter(l=>active(l)&&l.next&&l.next.slice(0,10)<todayS()).length;
+  const opt={responsive:true,maintainAspectRatio:false},mk=(id,cfg)=>{const e=$('#'+id);if(e)charts.push(new Chart(e,cfg))};
+  mk('c1',{type:'doughnut',data:{labels:['On time','Done late','Overdue now'],datasets:[{data:[H.length-late,late,od],backgroundColor:['#2e9e5b','#e6a23c','#d9453d'],borderWidth:0}]},options:{...opt,plugins:{legend:{position:'right'}}}});
+  mk('c2',{type:'bar',data:{labels:SRC,datasets:[{data:SRC.map(s=>L.filter(l=>l.source===s).length),backgroundColor:g('--pri')}]},options:{...opt,plugins:{legend:{display:false}},scales:{y:{ticks:{precision:0}}}}});
+  mk('c3',{type:'bar',data:{labels:LOSTR,datasets:[{data:LOSTR.map(r=>L.filter(l=>l.lost===r).length),backgroundColor:'#d9453d'}]},options:{...opt,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{precision:0}}}}});
+}
+
+/* ================= MENU, EXPORT, IMPORT, BACKUP ================= */
+function menu(){sheet(`<h3>Menu</h3><button class="btn full" onclick="catSheet()">Vehicle master (models and variants)</button><button class="btn full" onclick="colSheet()">Color master</button><button class="btn full" onclick="tplEdit()">WhatsApp template and my name</button><button class="btn full" onclick="theme()">Theme: ${S.theme||'auto'} (tap to change)</button><button class="btn full" onclick="expCSV()">Export leads (CSV)</button><label class="btn full">Import leads (CSV)<input type="file" accept=".csv,text/csv" hidden onchange="rd(this,impCSV)"></label><button class="btn full" onclick="out('followup-backup.json',JSON.stringify(S,null,1))">Backup everything (JSON)</button><label class="btn full">Restore backup (JSON)<input type="file" accept=".json,application/json" hidden onchange="rd(this,restore)"></label>${S.sample?'<button class="btn full red" onclick="clearSample()">Clear sample data</button>':''}`)}
+function theme(){S.theme=S.theme===''?'dark':S.theme==='dark'?'light':'';applyTheme();save();menu()}
+function applyTheme(){if(S.theme)document.documentElement.dataset.theme=S.theme;else delete document.documentElement.dataset.theme;if(tab==='dash')render()}
+function clearSample(){if(confirm('Remove all leads and start fresh?')){S.leads=[];S.sample=false;if(S.catSample){S.cat={};S.catSample=false}if(S.colSample){S.cols=[];S.colSample=false}save();closeSheet();render()}}
+async function out(name,text){try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()){const P=Capacitor.Plugins,w=await P.Filesystem.writeFile({path:name,data:text,directory:'CACHE',encoding:'utf8'});await P.Share.share({title:name,url:w.uri});return}}catch(e){toast('Could not share file')}try{const d=window.claude&&await claude.use('downloads');if(d){await d.save({filename:name,data:new Blob([text])});return}}catch(e){if(e&&e.code==='declined')return}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text]));a.download=name;document.body.appendChild(a);a.click();a.remove()}catch(e){}
+  sheet(`<h3>${name}</h3><div class="mut">If no download started, copy this text and save it as ${name}.</div><textarea id="ot" style="min-height:200px">${esc(text)}</textarea><button class="btn pri full" onclick="$('#ot').select();document.execCommand('copy');toast('Copied')">Copy</button>`)}
+const COLS=['name','mobile','vehicle','color','source','budget','exchange','exchange_details','finance','status','next_followup','notes','created','salesperson','lost_reason'];
+function expCSV(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  out('followup-leads.csv',[COLS.join(',')].concat(S.leads.map(l=>[l.name,l.mobile,l.vehicle,l.color,l.source,l.budget,l.exch.on?'Yes':'No',l.exch.d,l.fin?'Yes':'No',l.status,l.next,l.notes,l.created,l.sp,l.lost].map(q).join(','))).join('\n'))}
+function rd(inp,fn){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>fn(String(r.result));r.readAsText(f)}
+function parseCSV(t){const R=[];let r=[],c='',q=false;for(let i=0;i<t.length;i++){const ch=t[i];
+  if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}
+  else if(ch==='"')q=true;else if(ch===','){r.push(c);c=''}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;r.push(c);c='';R.push(r);r=[]}else c+=ch}
+  if(c||r.length){r.push(c);R.push(r)}return R.filter(x=>x.some(v=>v.trim()))}
+function impCSV(t){const R=parseCSV(t),h=R.shift().map(x=>x.trim().toLowerCase());let ok=0,bad=0;
+  R.forEach(r=>{const o={};h.forEach((k,i)=>o[k]=(r[i]||'').trim());const mob=(o.mobile||'').replace(/\D/g,'').slice(-10);
+    if(!o.name||mob.length!==10){bad++;return}
+    const st=ST.includes(o.status)?o.status:'Enquiry';
+    S.leads.push({id:uid(),name:o.name,mobile:mob,vehicle:o.vehicle||'',color:o.color||'',source:SRC.includes(o.source)?o.source:'Walk-in',budget:(o.budget||'').replace(/\D/g,''),exch:{on:/^y/i.test(o.exchange),d:o.exchange_details||''},fin:/^y/i.test(o.finance),status:st,next:ST.indexOf(st)<4?(o.next_followup||at(1)):'',notes:o.notes||'',created:o.created||nowS(),sp:o.salesperson||'',lost:o.lost_reason||'',hist:[{t:nowS(),k:'new',x:'Imported from CSV'}]});ok++});
+  save();closeSheet();render();toast(`Imported ${ok} lead(s)${bad?`, skipped ${bad} invalid`:''}`)}
+function restore(t){try{const d=JSON.parse(t);if(!Array.isArray(d.leads))throw 0;if(!confirm('Replace all current data with this backup?'))return;S=Object.assign(S,d);migrate();save();applyTheme();closeSheet();render();toast('Backup restored')}catch(e){toast('That file is not a valid FollowUp backup')}}
+
+/* ================= VEHICLE MASTER (model > variant) and COLOR MASTER ================= */
+const VTPL='model,variant\nSwift,LXi\nSwift,ZXi AMT\nCreta,SX Diesel\nSplendor Plus,Self Drum\nActiva 6G,Deluxe';
+const CTPL='model,variant,color\nSwift,,Pearl White|Lustre Blue\nSwift,ZXi AMT,Solid Fire Red\nCreta,,Abyss Black\n,,Matte Black';
+const k=x=>(x||'').toLowerCase(),splitC=x=>(x||'').split(/[|;,]/).map(c=>c.trim()).filter(Boolean);
+/* Converts older saved data (colors inside the vehicle list) to the two-master format */
+function migrate(){S.cols=S.cols||[];for(const m in S.cat){const v=S.cat[m];if(!Array.isArray(v)){S.cat[m]=Object.keys(v);Object.entries(v).forEach(([vn,cs])=>cs.forEach(c=>S.cols.push({model:m,variant:vn,color:c})))}}}
+/* Colors for a model+variant: rows with blank model apply to all models, blank variant to all variants */
+const colorsFor=(m,v)=>[...new Set(S.cols.filter(r=>(!r.model||k(r.model)===k(m))&&(!r.variant||k(r.variant)===k(v))).map(r=>r.color))];
+function addCat(m,v){const a=S.cat[m]=S.cat[m]||[];if(!a.includes(v))a.push(v)}
+function addCol(m,v,cs){cs.forEach(c=>{if(!S.cols.some(r=>r.model===m&&r.variant===v&&r.color===c))S.cols.push({model:m,variant:v,color:c})})}
+function dropCat(){if(S.catSample){S.cat={};S.catSample=false}}
+function dropCol(){if(S.colSample){S.cols=[];S.colSample=false}}
+/* --- Vehicle master screen --- */
+function catSheet(){const M=Object.keys(S.cat),n=M.reduce((a,m)=>a+S.cat[m].length,0);
+  sheet(`<h3>Vehicle master</h3><div class="mut">${M.length} models, ${n} variants (sub-models).</div>
+<label class="btn full">Upload vehicle master (CSV)<input type="file" accept=".csv,text/csv" hidden onchange="rd(this,impCat)"></label>
+<button class="btn full" onclick="out('vehicle-master-template.csv',VTPL)">Download CSV template</button><div class="mut" style="margin-top:6px">Columns: model, variant. One row per variant. Colors go in the Color master.</div>
+<h2>Add manually</h2><input id="cm" placeholder="Model (e.g. Creta)"><input id="cv" style="margin-top:8px" placeholder="Variant / sub-model (e.g. SX Diesel)"><button class="btn pri full" onclick="catAdd()">Add</button>
+<h2>Current master</h2>${M.map((m,i)=>`<div class="card plain"><div class="row" style="cursor:default"><b>${esc(m)}</b><button class="chip" style="margin:0" onclick="catDel(${i})">Remove</button></div><div class="mut">${esc(S.cat[m].join(', '))}</div></div>`).join('')||'<div class="empty">No vehicles yet. Upload a CSV or add one above.</div>'}`)}
+function catAdd(){const m=$('#cm').value.trim(),v=$('#cv').value.trim();if(!m||!v)return toast('Enter model and variant');dropCat();addCat(m,v);save();catSheet();toast('Added')}
+function catDel(i){delete S.cat[Object.keys(S.cat)[i]];save();catSheet()}
+function impCat(t){const R=parseCSV(t),h=R.shift().map(x=>x.trim().toLowerCase()),im=h.indexOf('model'),iv=h.indexOf('variant');
+  if(im<0||iv<0)return toast('CSV needs model and variant columns');
+  dropCat();let n=0;R.forEach(r=>{const m=(r[im]||'').trim(),v=(r[iv]||'').trim();if(m&&v){addCat(m,v);n++}});save();catSheet();toast('Loaded '+n+' variants')}
+/* --- Color master screen --- */
+function colGroups(){const g={};S.cols.forEach(r=>{const key=(r.model||'All models')+' › '+(r.variant||'All variants');(g[key]=g[key]||[]).push(r.color)});return g}
+function colSheet(){const G=colGroups(),K=Object.keys(G);
+  sheet(`<h3>Color master</h3><div class="mut">${S.cols.length} color entries.</div>
+<label class="btn full">Upload color master (CSV)<input type="file" accept=".csv,text/csv" hidden onchange="rd(this,impCol)"></label>
+<button class="btn full" onclick="out('color-master-template.csv',CTPL)">Download CSV template</button><div class="mut" style="margin-top:6px">Columns: model, variant, color. Leave variant blank to apply to all variants of that model; leave model blank too to apply to every vehicle. Several colors in one cell: separate with |</div>
+<h2>Add manually</h2><input id="km" placeholder="Model (blank = all models)"><input id="kv" style="margin-top:8px" placeholder="Variant (blank = all variants)"><input id="kc" style="margin-top:8px" placeholder="Colors, separated by commas"><button class="btn pri full" onclick="colAdd()">Add</button>
+<h2>Current colors</h2>${K.map((x,i)=>`<div class="card plain"><div class="row" style="cursor:default"><b>${esc(x)}</b><button class="chip" style="margin:0" onclick="colDel(${i})">Remove</button></div><div class="mut">${esc(G[x].join(', '))}</div></div>`).join('')||'<div class="empty">No colors yet. Upload a CSV or add some above.</div>'}`)}
+function colAdd(){const c=splitC($('#kc').value);if(!c.length)return toast('Enter at least one color');dropCol();addCol($('#km').value.trim(),$('#kv').value.trim(),c);save();colSheet();toast('Added')}
+function colDel(i){const key=Object.keys(colGroups())[i];S.cols=S.cols.filter(r=>(r.model||'All models')+' › '+(r.variant||'All variants')!==key);save();colSheet()}
+function impCol(t){const R=parseCSV(t),h=R.shift().map(x=>x.trim().toLowerCase()),im=h.indexOf('model'),iv=h.indexOf('variant'),ic=Math.max(h.indexOf('color'),h.indexOf('colour'));
+  if(ic<0)return toast('CSV needs a color column');
+  dropCol();let n=0;R.forEach(r=>{const cs=splitC(r[ic]);if(cs.length){addCol(im<0?'':(r[im]||'').trim(),iv<0?'':(r[iv]||'').trim(),cs);n+=cs.length}});save();colSheet();toast('Loaded '+n+' colors')}
+/* --- Lead form: dependent Model > Variant > Color dropdowns (falls back to typing) --- */
+function vehHTML(l){const M=Object.keys(S.cat);
+  if(!M.length)return `<label>Vehicle interested (model / variant) *</label><input id="fv" value="${esc(l.vehicle)}" placeholder="e.g. Creta SX Diesel"><label>Color</label><input id="fc" value="${esc(l.color||'')}"><div class="mut">Tip: upload your Vehicle master and Color master from the Menu to pick from dropdowns.</div>`;
+  const man=l.vehicle&&!(l.model&&S.cat[l.model]);
+  return `<label>Model *</label><select id="vm" onchange="vSel()"><option value="">Select model</option>${M.map(m=>`<option ${m===l.model?'selected':''}>${esc(m)}</option>`).join('')}<option value="__o" ${man?'selected':''}>Other (type manually)</option></select><div id="vd"></div>`}
+function vSel(p={}){const m=$('#vm').value,d=$('#vd');
+  if(m==='__o'){d.innerHTML=`<label>Vehicle (model / variant) *</label><input id="fv" value="${esc(p.veh||'')}"><label>Color</label><input id="fc" value="${esc(p.c||'')}">`;return}
+  if(!m){d.innerHTML='';return}
+  d.innerHTML=`<label>Variant *</label><select id="vv" onchange="vCol()"><option value="">Select variant</option>${S.cat[m].map(v=>`<option ${v===p.v?'selected':''}>${esc(v)}</option>`).join('')}</select><label>Color</label><div id="cw"></div>`;vCol(p.c)}
+function vCol(c){const C=colorsFor($('#vm').value,$('#vv').value),L=c&&!C.includes(c)?[...C,c]:C;
+  $('#cw').innerHTML=L.length?`<select id="fc"><option value="">Select color</option>${L.map(x=>`<option ${x===c?'selected':''}>${esc(x)}</option>`).join('')}</select>`:`<input id="fc" value="${esc(c||'')}" placeholder="Type color (none in Color master)">`}
+
+/* ================= ROUTER ================= */
+function render(){
+  const T=[['today','Today'],['leads','Leads'],['pipe','Pipeline'],['dash','Dashboard']];
+  $('#nav').innerHTML=T.map(([k,t])=>`<button class="${k===tab?'on':''}" onclick="tab='${k}';render();scrollTo(0,0)">${t}</button>`).join('');
+  $('#app').innerHTML={today:rToday,leads:rLeads,pipe:rPipe,dash:rDash}[tab]();
+  if(tab==='dash')drawCharts();
+}
+load();applyTheme();render();
+</script></body></html>
